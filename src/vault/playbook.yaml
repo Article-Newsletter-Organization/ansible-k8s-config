@@ -1,0 +1,33 @@
+
+- name: Instalação do Vault
+  hosts: localhost
+  gather_facts: no
+  vars:
+    hashcorp_repo_url: "https://helm.releases.hashicorp.com"
+    gcp_project_id: "article-newsletter-project"
+    gcp_region: "southamerica-east1"
+    gcp_key_ring: "vault-auto-unseal"
+    gcp_crypto_key: "vault-auto-unseal-crypto-key"
+  tasks:
+    - name: Instalando o Consul usando Helm
+      kubernetes.core.helm:
+        release_name: consul
+        release_namespace: vault
+        chart_ref: consul
+        chart_version: 1.1.2
+        chart_repo_url: "{{ hashcorp_repo_url  }}"
+        create_namespace: true
+
+        values_files:
+          - "consul-values.yaml"
+
+    - name: Instalando o Vault usando Helm
+      kubernetes.core.helm:
+        release_name: vault
+        release_namespace: vault
+        chart_ref: vault
+        chart_version: 0.26.1
+        chart_repo_url: "{{ hashcorp_repo_url  }}"
+
+        values_files:
+          - vault-values.yaml
