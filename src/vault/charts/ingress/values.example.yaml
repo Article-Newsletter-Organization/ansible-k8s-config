@@ -1,0 +1,4 @@
+host:
+  domain: vault.example.com
+  tls:
+    secretName: vault-cert-tls

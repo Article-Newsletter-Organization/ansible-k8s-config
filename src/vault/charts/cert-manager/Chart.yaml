@@ -1,0 +1,4 @@
+apiVersion: v2
+name: vault-issuer
+description: Issuer padrão responsável por gerenciar os certificados dos serviços do Hashicorp Vault 
+version: 1.0.0

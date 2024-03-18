@@ -1,0 +1,24 @@
+- name: Configurando o Cert-manager e o Ingress para expor o Vault na internet
+  hosts: localhost
+  tasks:
+    - name: Configurando o Cert Manager com o Helm
+      kubernetes.core.helm:
+        release_name: vault-cert-manager
+        release_namespace: vault
+        chart_ref: ../charts/cert-manager
+        wait: true
+
+        # state: absent
+        values_files:
+          - ../charts/cert-manager/values.secret.yaml
+    
+    - name: Configurando o Ingress com o Helm
+      kubernetes.core.helm:
+        release_name: vault-ingress-chart
+        release_namespace: vault
+        chart_ref: ../charts/ingress
+        wait: true
+
+        # state: absent
+        values_files:
+          - ../charts/ingress/values.secret.yaml
