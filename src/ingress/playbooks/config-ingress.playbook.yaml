@@ -1,0 +1,10 @@
+- name: Configurando o Cert Manager
+  hosts: localhost
+  tasks:
+    - name: Fazendo deploy do ClusterIssuer
+      kubernetes.core.helm:
+        release_name: default-cluster-issuer
+        release_namespace: default
+        chart_ref: ../chart
+        values_files:
+          - ../chart/values.secret.yaml

@@ -1,1 +1,2 @@
-cert_manager_email: meuemail@example.com
+cert_manager:
+  email: meuemail@example.com

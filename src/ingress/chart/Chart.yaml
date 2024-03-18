@@ -1,0 +1,4 @@
+apiVersion: v2
+name: default-issuer
+description: Issuer padrão responsável por gerenciar os certificados dos serviços do Cluster 
+version: 1.0.0
