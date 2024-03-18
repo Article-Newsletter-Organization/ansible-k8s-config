@@ -1,0 +1,16 @@
+- name: Deselando as instâncias do Vault
+  hosts: localhost
+  vars_files:
+    - ../config/vault-unseal-keys.yaml
+  tasks:
+    - name: Decodificar e selecionar as 3 primeiras chaves
+      set_fact:
+        keys: "{{ recovery_keys_b64 | map('b64decode') | list | slice(1, 4) }}"
+      
+    - name: Deselando a primeira instância
+      kubernetes.core.k8s_exec:
+        namespace: vault
+        pod: vault-server-0
+        command: vault unseal {{ item }}
+      loop: "{{ keys }}"
+

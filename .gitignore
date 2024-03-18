@@ -1,1 +1,5 @@
 *.private.*
+*.secret.*
+!*.example.*
+*venv*
+vault-unseal-keys.*

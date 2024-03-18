@@ -33,9 +33,11 @@ server:
       cpu: 2000m
 
   extraEnvironmentVars:
-    GOOGLE_REGION: global
-    GOOGLE_PROJECT: $GCP_PROJECT_ID
+    GOOGLE_PROJECT: article-newsletter-project
+    GOOGLE_REGION: southamerica-east1
     GOOGLE_APPLICATION_CREDENTIALS: /vault/userconfig/kms-creds/gcp-credentials.private.json
+    GOOGLE_KEYRING: vault-auto-unseal
+    GOOGLE_CRYPTO_KEY: vault-auto-unseal-crypto-key
 
   extraVolumes:
   - type: 'secret'
@@ -48,25 +50,27 @@ server:
   ha:
     enabled: true
     replicas: 1
-    config: |
-      ui = true
+    raft:
+      enabled: true
+      config: |
+        ui = true
 
-      listener "tcp" {
-        tls_disable = 1
-        address     = "0.0.0.0:8200"
-      }
+        listener "tcp" {
+          tls_disable = 1
+          address     = "0.0.0.0:8200"
+        }
 
-      storage "consul" {
-        path = "vault"
-        address = "consul-consul-server:8500"
-      }
+        storage "consul" {
+          path = "vault"
+          address = "vault-consul-consul-server:8500"
+        }
 
-      seal "gcpckms" {
-        project     = "$GCP_PROJECT_ID"
-        region      = "global"
-        key_ring    = "$KEY_RING_NAME"
-        crypto_key  = "$KEY_NAME"
-      }
+        seal "gcpckms" {
+          project     = "article-newsletter-project"
+          region      = "southamerica-east1"
+          key_ring    = "vault-auto-unseal"
+          crypto_key  = "vault-auto-unseal-crypto-key"
+        }
 
 # Vault UI
 ui:

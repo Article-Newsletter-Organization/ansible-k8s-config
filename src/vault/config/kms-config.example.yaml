@@ -1,0 +1,4 @@
+GCP_PROJECT_ID: "article-newsletter-project"
+GCP_REGION: "southamerica-east1"
+GCP_KEYRING: "vault-auto-unseal"
+GCP_CRYPTO_KEY: "vault-auto-unseal-crypto-key"

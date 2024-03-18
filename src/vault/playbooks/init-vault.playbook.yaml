@@ -1,0 +1,34 @@
+- name: Configurando o auto-unseal do vault
+  hosts: localhost
+  tasks:
+    - name: Obter informações sobre o pod vault-server-0
+      kubernetes.core.k8s_exec:
+        namespace: vault
+        pod: vault-server-0
+        command: vault status -format=yaml
+      register: vault_status_info
+
+    - name: Converter YAML em uma variável
+      set_fact:
+        vault_info: "{{ vault_status_info.stdout_lines | join('\n') | from_yaml }}"
+
+    - name: Mostrando resultado
+      debug:
+        msg: "{{ vault_info }}"
+
+    - name: Verificar se o Vault está inicializado e selado
+      set_fact:
+        is_initialized: "{{ vault_info.initialized == true }}"
+
+    - name: Guardando as chaves de selamento do Vault
+      failed_when: not is_initialized
+      kubernetes.core.k8s_exec:
+        namespace: vault
+        pod: vault-server-0
+        command: vault operator init -format=yaml
+      register: vault_init_output
+
+    - name: Escrevendo as chaves de selamento em um arquivo
+      copy:
+        content: "{{ vault_init_output.stdout }}"
+        dest: "../config/vault-unseal-keys.yaml"
