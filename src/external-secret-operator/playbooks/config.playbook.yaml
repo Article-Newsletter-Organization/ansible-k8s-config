@@ -14,12 +14,28 @@
         path: "../config/token_info.secret.yaml"
       register: file_status
 
+    - name: Carregando possível ESO helm release
+      kubernetes.core.helm_info:
+        release_name: external-secrets
+        release_namespace: external-secrets
+      register: external_secret_chart_info
+
     - name: Carregando dados do token
       set_fact:
         token_info: "{{ lookup('file', '../config/token_info.secret.yaml', errors= 'ignore') | from_yaml }}"
         has_token: "{{ file_status.stat.exists }}"
 
+    - name: Habilitando o secret engine das variáveis de ambiente
+      kubernetes.core.k8s_exec:
+        namespace: vault
+        pod: vault-server-0
+        command: > 
+          vault secrets enable -path={{ vault_secret_engine_path }} kv-2
+      ignore_errors: yes
+
     - name: Instalando o External Secret Operator(ESO) usando Helm
+      when: 
+        external_secret_chart_info | json_query('status') is none
       kubernetes.core.helm:
         release_name: external-secrets
         release_namespace: external-secrets
