@@ -1,0 +1,16 @@
+- name: Fazendo deploy do Jenkins do Cluster
+  hosts: localhost
+  vars:
+    repo_url: "https://charts.jenkins.io"
+  tasks:
+    - name: Instalando Jenkins usando helm
+      kubernetes.core.helm:
+        release_name: "jenkins"
+        release_namespace: "jenkins"
+        chart_ref: "jenkins"
+        chart_version: 5.1.1
+        chart_repo_url: "{{ repo_url  }}"
+        create_namespace: true
+
+        values_files:
+          - ../config/jenkins-values.secret.yaml

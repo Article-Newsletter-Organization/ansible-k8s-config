@@ -1,0 +1,18 @@
+controller:
+  admin:
+    username: "superadmin"
+    password: "strongpassword"
+  ingress:
+    enabled: true
+    annotations: 
+      kubernetes.io/ingress.class: nginx
+      cert-manager.io/cluster-issuer: cert-manager-prod
+      cert-manager.io/duration: "2140h"
+      cert-manager.io/renew-before: "1500h"
+    
+    hostName: jenkins.example.com
+
+    tls:
+    - secretName: jenkins-cert-tls
+      hosts:
+        - jenkins.example.com
