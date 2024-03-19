@@ -1,0 +1,87 @@
+- name: Configurando o External Secret Operator(ESO) no Cluster
+  hosts: localhost
+  vars:
+    eso_repo_url: "https://charts.external-secrets.io"
+    policy_name: "service_env_client"
+    vault_secret_engine_path: "service_env"
+    vault_server: "http://vault-server.vault.svc.cluster.local:8200"
+    vault_version: "v2"
+  vars_files:
+    - ../../vault/config/vault-unseal-keys.yaml
+  tasks:
+    - name: Carregando o arquivo de token
+      stat:
+        path: "../config/token_info.secret.yaml"
+      register: file_status
+
+    - name: Carregando dados do token
+      set_fact:
+        token_info: "{{ lookup('file', '../config/token_info.secret.yaml', errors= 'ignore') | from_yaml }}"
+        has_token: "{{ file_status.stat.exists }}"
+
+    - name: Instalando o External Secret Operator(ESO) usando Helm
+      kubernetes.core.helm:
+        release_name: external-secrets
+        release_namespace: external-secrets
+        chart_ref: external-secrets
+        chart_version: 0.9.8
+        chart_repo_url: "{{ eso_repo_url  }}"
+        create_namespace: true
+        wait: true
+
+    - name: Transferindo a politica para o Pod
+      when:
+        not has_token
+      kubernetes.core.k8s_cp:
+        namespace: vault
+        pod: vault-server-0
+        remote_path: /home/vault/service_env_policy.eot
+        local_path: ../config/policy.eot
+
+    - name: Criando a politica para a Secret Store
+      when:
+        not has_token
+      kubernetes.core.k8s_exec:
+        namespace: vault
+        pod: vault-server-0
+        command: "/bin/sh -c 'vault login {{ root_token }} && vault policy write {{ policy_name }} /home/vault/service_env_policy.eot && rm /home/vault/service_env_policy.eot'"
+
+    - name: Criando o token de acesso da Secret Store
+      when:
+        not has_token
+      kubernetes.core.k8s_exec:
+        namespace: vault
+        pod: vault-server-0
+        command: >
+          vault token create -policy="{{ policy_name }}" -metadata="app=external-secrets" -format=yaml
+      register: token_data
+
+    - name: Converter YAML em uma variável
+      when:
+        not has_token
+      set_fact:
+        token_info: "{{ token_data.stdout_lines | join('\n') | from_yaml }}"
+
+    - name: Guardando em um arquivo
+      when:
+        not has_token
+      shell: 
+        cmd: >
+          echo "{{ token_info | to_nice_yaml }}" > ../config/token_info.secret.yaml
+
+    - name: Criando o secret do token de acesso
+      kubernetes.core.k8s:
+        api_version: v1
+        kind: Secret
+        name: vault-secret-store-token
+        namespace: vault
+        definition:
+          data:
+            token: "{{ token_info.auth.client_token | b64encode }}"
+          type: Opaque
+        
+
+    - name: Criando a Secret Store para o vault
+      kubernetes.core.k8s:
+        state: present
+        template: '../config/secret-store-template.yaml'

@@ -1,0 +1,4 @@
+
+path "service_env/*" {
+    capabilities = ["read", "list"]
+}

@@ -13,4 +13,13 @@
         pod: vault-server-0
         command: vault unseal {{ item }}
       loop: "{{ keys }}"
+    
+    - name: Inserindo segredos do autounseal
+      kubernetes.core.k8s_exec:
+        namespace: vault
+        pod: vault-server-0
+        command: |
+          vault login {{ root_token }}
+          vault secrets enable -path=service_env kv-v2
+        
 
