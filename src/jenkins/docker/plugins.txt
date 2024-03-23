@@ -1,0 +1,15 @@
+pipeline-stage-view:2.34
+hashicorp-vault-plugin
+hashicorp-vault-pipeline
+config-file-provider
+ssh-agent
+nodejs
+warnings-ng
+github-branch-source
+copyartifact
+parameterized-trigger
+conditional-buildstep
+github
+dark-theme
+locale
+docker-plugin
