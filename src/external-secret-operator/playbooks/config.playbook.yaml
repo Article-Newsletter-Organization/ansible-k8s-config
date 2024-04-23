@@ -89,8 +89,8 @@
       kubernetes.core.k8s:
         api_version: v1
         kind: Secret
-        name: vault-secret-store-token
-        namespace: vault
+        name: vault-env-secret-store-token
+        namespace: default
         definition:
           data:
             token: "{{ token_info.auth.client_token | b64encode }}"
